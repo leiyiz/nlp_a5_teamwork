@@ -1,0 +1,1 @@
+from mt_classifier.predictors.mt_classifier_predictor import MTClassifierPredictor
