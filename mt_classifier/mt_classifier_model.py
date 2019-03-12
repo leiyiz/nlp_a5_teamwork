@@ -42,8 +42,8 @@ class MtClassifier(Model):
 
     def __init__(self, vocab: Vocabulary,
                  text_field_embedder: TextFieldEmbedder,
-                 title_encoder: Seq2VecEncoder,
-                 abstract_encoder: Seq2VecEncoder,
+                 origin_language_encoder: Seq2VecEncoder,
+                 target_language_encoder: Seq2VecEncoder,
                  classifier_feedforward: FeedForward,
                  initializer: InitializerApplicator = InitializerApplicator(),
                  regularizer: Optional[RegularizerApplicator] = None) -> None:
@@ -51,40 +51,42 @@ class MtClassifier(Model):
 
         self.text_field_embedder = text_field_embedder
         self.num_classes = self.vocab.get_vocab_size("labels")
-        self.title_encoder = title_encoder
-        self.abstract_encoder = abstract_encoder
+        self.origin_language_encoder = origin_language_encoder
+        self.target_language_encoder = target_language_encoder
         self.classifier_feedforward = classifier_feedforward
 
-        if text_field_embedder.get_output_dim() != title_encoder.get_input_dim():
+        # TODO: should we delete these error messages
+        if text_field_embedder.get_output_dim() != origin_language_encoder.get_input_dim():
             raise ConfigurationError("The output dimension of the text_field_embedder must match the "
                                      "input dimension of the title_encoder. Found {} and {}, "
                                      "respectively.".format(text_field_embedder.get_output_dim(),
-                                                            title_encoder.get_input_dim()))
-        if text_field_embedder.get_output_dim() != abstract_encoder.get_input_dim():
+                                                            origin_language_encoder.get_input_dim()))
+        if text_field_embedder.get_output_dim() != target_language_encoder.get_input_dim():
             raise ConfigurationError("The output dimension of the text_field_embedder must match the "
                                      "input dimension of the abstract_encoder. Found {} and {}, "
                                      "respectively.".format(text_field_embedder.get_output_dim(),
-                                                            abstract_encoder.get_input_dim()))
+                                                            target_language_encoder.get_input_dim()))
         self.metrics = {
             "accuracy": CategoricalAccuracy(),
             "accuracy3": CategoricalAccuracy(top_k=3)
         }
-        self.loss = torch.nn.CrossEntropyLoss()
+        # used F instead
+        # self.loss = torch.nn.CrossEntropyLoss()
 
         initializer(self)
 
     @overrides
     def forward(self,  # type: ignore
-                title: Dict[str, torch.LongTensor],
-                abstract: Dict[str, torch.LongTensor],
+                origin_sentence: Dict[str, torch.LongTensor],
+                target_sentence: Dict[str, torch.LongTensor],
                 label: torch.LongTensor = None) -> Dict[str, torch.Tensor]:
         # pylint: disable=arguments-differ
         """
         Parameters
         ----------
-        title : Dict[str, Variable], required
+        origin_sentence : Dict[str, Variable], required
             The output of ``TextField.as_array()``.
-        abstract : Dict[str, Variable], required
+        target_sentence : Dict[str, Variable], required
             The output of ``TextField.as_array()``.
         label : Variable, optional (default = None)
             A variable representing the label for each instance in the batch.
@@ -97,18 +99,19 @@ class MtClassifier(Model):
         loss : torch.FloatTensor, optional
             A scalar loss to be optimised.
         """
-        embedded_title = self.text_field_embedder(title)
-        title_mask = util.get_text_field_mask(title)
-        encoded_title = self.title_encoder(embedded_title, title_mask)
+        embedded_origin = self.text_field_embedder(origin_sentence)
+        origin_mask = util.get_text_field_mask(origin_sentence)
+        encoded_origin = self.title_encoder(embedded_origin, origin_mask)
 
-        embedded_abstract = self.text_field_embedder(abstract)
-        abstract_mask = util.get_text_field_mask(abstract)
-        encoded_abstract = self.abstract_encoder(embedded_abstract, abstract_mask)
+        embedded_target = self.text_field_embedder(target_sentence)
+        target_mask = util.get_text_field_mask(target_sentence)
+        encoded_target = self.abstract_encoder(embedded_target, target_mask)
 
-        logits = self.classifier_feedforward(torch.cat([encoded_title, encoded_abstract], dim=-1))
+        logits = self.classifier_feedforward(torch.cat([encoded_origin, encoded_target], dim=-1))
         output_dict = {'logits': logits}
         if label is not None:
-            loss = self.loss(logits, label)
+            # loss = self.loss(logits, label)
+            loss = F.cross_entropy(logits, label)
             for metric in self.metrics.values():
                 metric(logits, label)
             output_dict["loss"] = loss
