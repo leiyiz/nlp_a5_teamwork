@@ -1,6 +1,6 @@
 {
   "train_data_path": "a5-data/de_en.train",
-  "validation_data_path": "a4-data/de_en.dev",
+  "validation_data_path": "a5-data/de_en.dev",
   "dataset_reader": {
     "type": "mt_classifier_reader",
     // "use_subtrees": false,
