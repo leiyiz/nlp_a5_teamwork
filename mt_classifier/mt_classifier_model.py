@@ -1,4 +1,4 @@
-from typing import Dict, Optional
+from typing import Dict, Optional, List, Any
 
 import numpy
 from overrides import overrides
@@ -77,19 +77,21 @@ class MtClassifier(Model):
 
     @overrides
     def forward(self,  # type: ignore
-                origin_sentence: Dict[str, torch.LongTensor],
-                target_sentence: Dict[str, torch.LongTensor],
-                label: torch.LongTensor = None) -> Dict[str, torch.Tensor]:
+                source: Dict[str, torch.LongTensor],
+                candidate: Dict[str, torch.LongTensor],
+                label: torch.LongTensor = None,
+                metadata: List[Dict[str, Any]] = None) -> Dict[str, torch.Tensor]:
         # pylint: disable=arguments-differ
         """
         Parameters
         ----------
-        origin_sentence : Dict[str, Variable], required
+        source : Dict[str, Variable], required
             The output of ``TextField.as_array()``.
-        target_sentence : Dict[str, Variable], required
+        candidate : Dict[str, Variable], required
             The output of ``TextField.as_array()``.
         label : Variable, optional (default = None)
             A variable representing the label for each instance in the batch.
+        metadata:
         Returns
         -------
         An output dictionary consisting of:
@@ -99,12 +101,12 @@ class MtClassifier(Model):
         loss : torch.FloatTensor, optional
             A scalar loss to be optimised.
         """
-        embedded_origin = self.text_field_embedder(origin_sentence)
-        origin_mask = util.get_text_field_mask(origin_sentence)
+        embedded_origin = self.text_field_embedder(source)
+        origin_mask = util.get_text_field_mask(source)
         encoded_origin = self.title_encoder(embedded_origin, origin_mask)
 
-        embedded_target = self.text_field_embedder(target_sentence)
-        target_mask = util.get_text_field_mask(target_sentence)
+        embedded_target = self.text_field_embedder(candidate)
+        target_mask = util.get_text_field_mask(candidate)
         encoded_target = self.abstract_encoder(embedded_target, target_mask)
 
         logits = self.classifier_feedforward(torch.cat([encoded_origin, encoded_target], dim=-1))
@@ -115,6 +117,10 @@ class MtClassifier(Model):
             for metric in self.metrics.values():
                 metric(logits, label)
             output_dict["loss"] = loss
+
+        if metadata is not None:
+            output_dict["source"] = [x["source"] for x in metadata]
+            output_dict["candidate"] = [x["candidate"] for x in metadata]
 
         return output_dict
 
