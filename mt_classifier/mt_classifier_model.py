@@ -91,7 +91,7 @@ class MtClassifier(Model):
             The output of ``TextField.as_array()``.
         label : Variable, optional (default = None)
             A variable representing the label for each instance in the batch.
-        metadata:
+        metadata: List[Dict[str, Any]], optional
         Returns
         -------
         An output dictionary consisting of:
@@ -103,11 +103,11 @@ class MtClassifier(Model):
         """
         embedded_origin = self.text_field_embedder(source)
         origin_mask = util.get_text_field_mask(source)
-        encoded_origin = self.title_encoder(embedded_origin, origin_mask)
+        encoded_origin = self.origin_language_encoder(embedded_origin, origin_mask)
 
         embedded_target = self.text_field_embedder(candidate)
         target_mask = util.get_text_field_mask(candidate)
-        encoded_target = self.abstract_encoder(embedded_target, target_mask)
+        encoded_target = self.target_language_encoder(embedded_target, target_mask)
 
         logits = self.classifier_feedforward(torch.cat([encoded_origin, encoded_target], dim=-1))
         output_dict = {'logits': logits}
