@@ -36,27 +36,27 @@
         }
     },
     "origin_language_encoder": {
-        "type": "alternating_lstm",
+        "type": "lstm",
         "input_size": 1324,
-        "hidden_size": 200,
-        "num_layers": 3,
-        "recurrent_dropout_probability": 0.2,
-        "use_highway": true
+        "hidden_size": 256,
+        "num_layers": 2,
+        "dropout": 0.2,
+        "bidirectional": true
     },
     "target_language_encoder": {
-        "type": "alternating_lstm",
+        "type": "lstm",
         "input_size": 1324,
-        "hidden_size": 200,
-        "num_layers": 3,
-        "recurrent_dropout_probability": 0.2,
-        "use_highway": true
+        "hidden_size": 256,
+        "num_layers": 2,
+        "dropout": 0.2,
+        "bidirectional": true
     },
     "classifier_feedforward": {
-      "input_dim": 400,
+      "input_dim": 512,
       "num_layers": 2,
-      "hidden_dims": [64, 64, 2],
-      "activations": ["tanh", "tanh", "linear"],
-      "dropout": [0.1, 0.1, 0]
+      "hidden_dims": [128, 2],
+      "activations": ["tanh", "linear"],
+      "dropout": [0.1, 0]
     }
   },
   "iterator": {
