@@ -52,11 +52,11 @@
         "bidirectional": true
     },
     "classifier_feedforward": {
-      "input_dim": 512,
-      "num_layers": 2,
-      "hidden_dims": [128, 2],
-      "activations": ["tanh", "linear"],
-      "dropout": [0.1, 0]
+      "input_dim": 1024,
+      "num_layers": 3,
+      "hidden_dims": [256, 32, 2],
+      "activations": ["tanh", "tanh", "linear"],
+      "dropout": [0.1, 0.1, 0]
     }
   },
   "iterator": {
