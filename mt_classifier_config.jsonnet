@@ -124,7 +124,7 @@
     "origin_language_encoder": {
         "type": "stacked_bidirectional_lstm",
         "input_size": 1324,
-        "hidden_size": 256,
+        "hidden_size": 128,
         "num_layers": 3,
         "recurrent_dropout_probability": 0.2,
         "use_highway": true
@@ -132,17 +132,17 @@
     "target_language_encoder": {
         "type": "stacked_bidirectional_lstm",
         "input_size": 1324,
-        "hidden_size": 256,
+        "hidden_size": 128,
         "num_layers": 3,
         "recurrent_dropout_probability": 0.2,
         "use_highway": true
     },
     "classifier_feedforward": {
-      "input_dim": 1024,
-      "num_layers": 3,
-      "hidden_dims": [256, 32, 2],
-      "activations": ["tanh", "tanh", "linear"],
-      "dropout": [0.1, 0.1, 0]
+      "input_dim": 512,
+      "num_layers": 2,
+      "hidden_dims": [128, 2],
+      "activations": ["tanh", "linear"],
+      "dropout": [0.2, 0]
     }
   },
   "iterator": {
