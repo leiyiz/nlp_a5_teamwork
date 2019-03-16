@@ -122,7 +122,7 @@
         }
     },
     "origin_language_encoder": {
-        "type": "alternating_lstm",
+        "type": "stacked_bidirectional_lstm",
         "input_size": 1324,
         "hidden_size": 256,
         "num_layers": 3,
@@ -130,7 +130,7 @@
         "use_highway": true
     },
     "target_language_encoder": {
-        "type": "alternating_lstm",
+        "type": "stacked_bidirectional_lstm",
         "input_size": 1324,
         "hidden_size": 256,
         "num_layers": 3,
